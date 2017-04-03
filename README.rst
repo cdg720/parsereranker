@@ -1,5 +1,7 @@
 cleanup of github.com/cdg720/emnlp2016
 
+not ready yet
+
 ..
    LSTM Parse Reranker
    -------------------
