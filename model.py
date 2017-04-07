@@ -27,11 +27,11 @@ class Model(object):
     batch_size = tf.shape(self._input_data)[0]
     steps = tf.shape(self._input_data)[1]
 
-    lstm_cell = tf.nn.rnn_cell.LSTMCell(size)
+    lstm_cell = tf.contrib.rnn.LSTMCell(size)
     if is_training and config.keep_prob < 1:
-      lstm_cell = tf.nn.rnn_cell.DropoutWrapper(
+      lstm_cell = tf.contrib.rnn.DropoutWrapper(
           lstm_cell, output_keep_prob=config.keep_prob)
-    cell = tf.nn.rnn_cell.MultiRNNCell([lstm_cell] * config.num_layers)
+    cell = tf.contrib.rnn.MultiRNNCell([lstm_cell] * config.num_layers)
 
     with tf.device("/cpu:0"):
       embedding = tf.get_variable("embedding", [vocab_size, size])
@@ -49,7 +49,8 @@ class Model(object):
     softmax_b = tf.get_variable("softmax_b", [vocab_size])
     logits = tf.matmul(output, softmax_w) + softmax_b
     targets = tf.reshape(self._targets, [-1])
-    loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, targets)
+    loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
+        labels=targets, logits=logits)
     cost = tf.reduce_sum(loss) / tf.to_float(batch_size)
     
     loss = tf.reshape(loss * tf.to_float(tf.sign(targets)),
@@ -63,7 +64,8 @@ class Model(object):
     tvars = tf.trainable_variables()
     grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars),
                                       config.max_grad_norm)
-    optimizer = tf.train.GradientDescentOptimizer(self.lr)
+    optimizer = tf.train.MomentumOptimizer(self.lr, 0.99)
+    # optimizer = tf.train.GradientDescentOptimizer(self.lr)
     self._train_op = optimizer.apply_gradients(zip(grads, tvars))
 
     self._new_lr = tf.placeholder(

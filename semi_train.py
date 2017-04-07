@@ -20,7 +20,7 @@ flags.DEFINE_float('max_grad_norm', 20, 'max_grad_norm')
 flags.DEFINE_integer('num_layers', 3, 'num_layers')
 flags.DEFINE_integer('num_steps', 50, 'num_steps')
 flags.DEFINE_integer('hidden_size', 1500, 'hidden_size')
-flags.DEFINE_integer('max_epoch', 14, 'max_epoch')
+flags.DEFINE_integer('max_epoch', 15, 'max_epoch')
 flags.DEFINE_integer('max_max_epoch', 50, 'max_max_epoch')
 flags.DEFINE_float('keep_prob', 0.55, 'keep_prob')
 flags.DEFINE_float('lr_decay', 0.85, 'lr_decay')
@@ -89,23 +89,23 @@ def train():
     with sv.managed_session() as sess:
       silver_generator = reader.silver_file2word_ids(silver_path)
       j = 0
-      for i in range(config.max_max_epoch):
+      for i in range(i, config.max_max_epoch + 1):
         shuffle(train_data)
         shuffled_data = list(itertools.chain(*train_data))
       
         start_time = time.time()
         lr_decay = config.lr_decay ** max(i - config.max_epoch, 0.0)
         m.assign_lr(sess, config.learning_rate * lr_decay)
-        print 'Epoch: %d Learning rate: %.3f' % (i + 1, sess.run(m.lr))
+        print 'Epoch: %d Learning rate: %.3f' % (i, sess.run(m.lr))
         train_perplexity = run_epoch(sess, m, shuffled_data,
                                      FLAGS.batch_size, FLAGS.num_steps,
                                      m.train_op, verbose=True)
-        print 'Epoch: %d Train Perplexity: %.3f' % (i + 1, train_perplexity)
+        print 'Epoch: %d Train Perplexity: %.3f' % (i, train_perplexity)
         # valid_perplexity = run_epoch(sess, mvalid, valid_data,
         #                              FLAGS.batch_size, FLAGS.num_steps)
         # print 'Epoch: %d Valid Perplexity: %.3f' % (i + 1, valid_perplexity)
         valid_f1 = evaluate(sess, mvalid, valid_nbest_data)
-        print 'Epoch: %d Valid F1: %.2f' % (i + 1, valid_f1)
+        print 'Epoch: %d Valid F1: %.2f' % (i, valid_f1)
         if valid_f1 > prev:
           prev = valid_f1
           if FLAGS.model_path:
@@ -130,14 +130,14 @@ def train():
                                         FLAGS.batch_size, FLAGS.num_steps,
                                         m.train_op)
           print 'Epoch: %d Silver(%d) Perplexity: %.3f' % \
-            (i + 1, j, silver_perplexity)
+            (i, j, silver_perplexity)
           # valid_perplexity = run_epoch(sess, mvalid, valid_data,
           #                              FLAGS.batch_size, FLAGS.num_steps)
           # print 'Epoch: %d Silver(V) Perplexity: %.3f' % \
           #   (i+1, valid_perplexity)
         
           valid_f1 = evaluate(sess, mvalid, valid_nbest_data)
-          print 'Epoch: %d Silver(V) F1: %.2f' % (i+1, valid_f1)
+          print 'Epoch: %d Silver(V) F1: %.2f' % (i, valid_f1)
           if valid_f1 > prev:
             prev = valid_f1
             if FLAGS.model_path:
