@@ -89,7 +89,7 @@ def train():
     with sv.managed_session() as sess:
       silver_generator = reader.silver_file2word_ids(silver_path)
       j = 0
-      for i in range(i, config.max_max_epoch + 1):
+      for i in range(1, config.max_max_epoch + 1):
         shuffle(train_data)
         shuffled_data = list(itertools.chain(*train_data))
       

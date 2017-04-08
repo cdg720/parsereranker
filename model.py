@@ -64,8 +64,8 @@ class Model(object):
     tvars = tf.trainable_variables()
     grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars),
                                       config.max_grad_norm)
-    optimizer = tf.train.MomentumOptimizer(self.lr, 0.99)
-    # optimizer = tf.train.GradientDescentOptimizer(self.lr)
+    # optimizer = tf.train.MomentumOptimizer(self.lr, 0.99)
+    optimizer = tf.train.GradientDescentOptimizer(self.lr)
     self._train_op = optimizer.apply_gradients(zip(grads, tvars))
 
     self._new_lr = tf.placeholder(
